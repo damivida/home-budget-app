@@ -1,0 +1,30 @@
+version: '3.7'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: homebudgetdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - home-budget-postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # PG Admin
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - "15432:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: 'admin@admin.com'
+      PGADMIN_DEFAULT_PASSWORD: 'admin'
+    volumes:
+      - ./pgadmin/servers.json:/pgadmin4/servers.json
+
+volumes:
+  home-budget-postgres-data:
