@@ -1,17 +1,28 @@
 package com.example.homebudgetapp.expense.dto;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
-@AllArgsConstructor
 public class TotalSpendIncomeDto {
-    private BigDecimal totalSpend;
-    private BigDecimal totalIncome;
+
+    @JsonProperty(namespace = "totalHouseholdExpense")
+    private BigDecimal totalHouseholdExpense;
+
+    @JsonProperty(namespace = "totalHouseholdIncome")
+    private BigDecimal totalHouseholdIncome;
+
+    @JsonProperty(namespace = "fromDate")
     private LocalDateTime fromDate;
+
+    @JsonProperty(namespace = "toDate")
     private LocalDateTime toDate;
+
+    @JsonProperty(namespace = "totalExpensesIncomesPerUser")
+    private List<UserIncomeExpense> totalExpensesIncomesPerUser;
 }
 

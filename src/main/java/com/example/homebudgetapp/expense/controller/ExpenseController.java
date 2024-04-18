@@ -8,6 +8,7 @@ import com.example.homebudgetapp.expense.dto.TimeFrame;
 import com.example.homebudgetapp.expense.dto.TotalSpendIncomeDto;
 import com.example.homebudgetapp.expense.service.ExpenseService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -27,7 +28,7 @@ public class ExpenseController {
 
     @PostMapping("")
     @Operation(tags = OpenApiTags.EXPENSE, summary = "Create expense.")
-    public ResponseEntity<HttpStatus> insertExpense(@RequestBody ExpenseDto expenseDto) {
+    public ResponseEntity<HttpStatus> insertExpense(@Valid @RequestBody ExpenseDto expenseDto) {
         return new ResponseEntity<>(expenseService.insertExpense(expenseDto), HttpStatus.OK);
     }
 
@@ -51,14 +52,13 @@ public class ExpenseController {
         return new ResponseEntity<>(expenseService.getExpenses(description, category, username, minAmount, maxAmount, fromDate, toDate), HttpStatus.OK);
     }
 
-
-    @GetMapping("/total-spend-income")
-    @Operation(tags = OpenApiTags.EXPENSE, summary = "Get total expenses an income amount for selected time frame or wanted interval.")
-    public ResponseEntity<TotalSpendIncomeDto> getTotalExpenseAmount(
+    @GetMapping("/total-expense-income")
+    @Operation(tags = OpenApiTags.EXPENSE, summary = "Get total expenses and income amount for selected time frame or wanted interval for household and users.")
+    public ResponseEntity<TotalSpendIncomeDto> getTotalExpenseIncomeAmount(
             @RequestParam(name = "interval", required = false) TimeFrame timeFrame,
             @RequestParam(name = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
             @RequestParam(name = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate) throws HomeBudgetException {
-        return new ResponseEntity<>(expenseService.getTotalExpenseAmount(timeFrame, fromDate, toDate), HttpStatus.OK);
+        return new ResponseEntity<>(expenseService.getTotalExpenseIncomeAmount(timeFrame, fromDate, toDate), HttpStatus.OK);
     }
 
 

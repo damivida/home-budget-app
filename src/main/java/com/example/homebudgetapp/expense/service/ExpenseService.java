@@ -10,6 +10,7 @@ import com.example.homebudgetapp.expense.dto.*;
 import com.example.homebudgetapp.expense.entity.Expense;
 import com.example.homebudgetapp.expense.repository.ExpenseRepository;
 import com.example.homebudgetapp.user.entity.User;
+import com.example.homebudgetapp.user.entity.UserIncome;
 import com.example.homebudgetapp.user.service.UserService;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
@@ -27,7 +28,9 @@ import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -122,6 +125,57 @@ public class ExpenseService {
         return expenseList.stream().map(this::fromEntity).toList();
     }
 
+    public TotalSpendIncomeDto getTotalExpenseIncomeAmount(TimeFrame timeFrame, LocalDateTime fromDate, LocalDateTime toDate) throws HomeBudgetException {
+
+        if (Objects.nonNull(timeFrame)) {
+            switch (timeFrame) {
+                case YESTERDAY:
+                    fromDate = LocalDate.now().minusDays(1).atStartOfDay();
+                    toDate = LocalDate.now().atStartOfDay();
+                    break;
+                case CURRENT_WEEK:
+                    LocalDate now = LocalDate.now();
+                    fromDate = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atStartOfDay();
+                    toDate = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).plusDays(1).atStartOfDay();
+                    break;
+                case PREVIOUS_WEEK:
+                    fromDate = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusWeeks(1).atStartOfDay();
+                    toDate = LocalDate.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).plusDays(1).minusWeeks(1).atStartOfDay();
+                    break;
+                case CURRENT_MONTH:
+                    toDate = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()).atStartOfDay();
+                    fromDate = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
+                    break;
+                case PREVIOUS_MONTH:
+                    LocalDate firstDayOfPreviousMonth = LocalDate.now().withDayOfMonth(1).minusMonths(1);
+                    LocalDate lastDayOfPreviousMonth = LocalDate.now().withDayOfMonth(1).minusDays(1);
+                    toDate = lastDayOfPreviousMonth.atStartOfDay();
+                    fromDate = firstDayOfPreviousMonth.atStartOfDay();
+                    break;
+                case CURRENT_YEAR:
+                    toDate = LocalDate.now().with(TemporalAdjusters.lastDayOfYear()).atStartOfDay();
+                    fromDate = LocalDate.now().with(TemporalAdjusters.firstDayOfYear()).atStartOfDay();
+                    break;
+                case PREVIOUS_YEAR:
+                    toDate = LocalDate.now().with(TemporalAdjusters.lastDayOfYear()).minusYears(1).atStartOfDay();
+                    fromDate = LocalDate.now().with(TemporalAdjusters.firstDayOfYear()).minusYears(1).atStartOfDay();
+                    break;
+            }
+
+            return expenseIncomeAggregator(fromDate, toDate);
+
+        } else {
+            if (Objects.isNull(fromDate) || Objects.isNull(toDate)) {
+                throw new HomeBudgetException(Messages.INTERVAL_NOT_SPECIFIED);
+            }
+            if (fromDate.isAfter(toDate)) {
+                throw new HomeBudgetException(Messages.INTERVAL_INVALID);
+            }
+
+            return expenseIncomeAggregator(fromDate, toDate);
+        }
+    }
+
 
     private Specification getSpecification(String description,
                                            String category,
@@ -165,63 +219,7 @@ public class ExpenseService {
             return criteriaBuilder.and(searchCriteriaList.toArray(new Predicate[]{}));
         };
     }
-
-
-    public TotalSpendIncomeDto getTotalExpenseAmount(TimeFrame timeFrame,
-                                                     LocalDateTime fromDate,
-                                                     LocalDateTime toDate) throws HomeBudgetException {
-        if (Objects.nonNull(timeFrame)) {
-            switch (timeFrame) {
-                case YESTERDAY:
-                    fromDate = LocalDate.now().minusDays(1).atStartOfDay();
-                    toDate = LocalDate.now().atStartOfDay();
-                    break;
-                case CURRENT_WEEK:
-                    LocalDate now = LocalDate.now();
-                    fromDate = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atStartOfDay();
-                    toDate = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).plusDays(1).atStartOfDay();
-                    break;
-                case PREVIOUS_WEEK:
-                    fromDate = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusWeeks(1).atStartOfDay();
-                    toDate = LocalDate.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).plusDays(1).minusWeeks(1).atStartOfDay();
-                    break;
-                case CURRENT_MONTH:
-                    toDate = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()).atStartOfDay();
-                    fromDate = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
-                    break;
-                case PREVIOUS_MONTH:
-                    LocalDate firstDayOfPreviousMonth = LocalDate.now().withDayOfMonth(1).minusMonths(1);
-                    LocalDate lastDayOfPreviousMonth = LocalDate.now().withDayOfMonth(1).minusDays(1);
-                    toDate = lastDayOfPreviousMonth.atStartOfDay();
-                    fromDate = firstDayOfPreviousMonth.atStartOfDay();
-                    break;
-                case CURRENT_YEAR:
-                    toDate = LocalDate.now().with(TemporalAdjusters.lastDayOfYear()).atStartOfDay();
-                    fromDate = LocalDate.now().with(TemporalAdjusters.firstDayOfYear()).atStartOfDay();
-                    break;
-                case PREVIOUS_YEAR:
-                    toDate = LocalDate.now().with(TemporalAdjusters.lastDayOfYear()).minusYears(1).atStartOfDay();
-                    fromDate = LocalDate.now().with(TemporalAdjusters.firstDayOfYear()).minusYears(1).atStartOfDay();
-                    break;
-            }
-
-            BigDecimal totalExpensesBetweenDates = expenseRepository.findTotalExpensesBetweenDates(fromDate, toDate);
-            BigDecimal totalIncomeBetweenDates = userService.findTotalIncomeBetweenDates(fromDate, toDate);
-            return new TotalSpendIncomeDto(totalExpensesBetweenDates, totalIncomeBetweenDates, fromDate, toDate);
-
-        } else {
-            if (Objects.isNull(fromDate) || Objects.isNull(toDate)) {
-                throw new HomeBudgetException(Messages.INTERVAL_NOT_SPECIFIED);
-            }
-            if (fromDate.isAfter(toDate)) {
-                throw new HomeBudgetException(Messages.INTERVAL_INVALID);
-            }
-            BigDecimal totalExpensesBetweenDates = expenseRepository.findTotalExpensesBetweenDates(fromDate, toDate);
-            BigDecimal totalIncomeBetweenDates = userService.findTotalIncomeBetweenDates(fromDate, toDate);
-            return new TotalSpendIncomeDto(totalExpensesBetweenDates, totalIncomeBetweenDates, fromDate, toDate);
-        }
-    }
-
+    
 
     private Expense toEntity(ExpenseDto expenseDto) {
         Category category = categoryService.getCategoryById(expenseDto.getCategoryId());
@@ -253,5 +251,74 @@ public class ExpenseService {
         expenseResponse.setUsername(expense.getUser().getUsername());
         expenseResponse.setCategoryResponse(categoryResponse);
         return expenseResponse;
+    }
+
+   
+
+    private TotalSpendIncomeDto expenseIncomeAggregator(LocalDateTime fromDate, LocalDateTime toDate) {
+
+        // Final object list
+        List<UserIncomeExpense> userIncomeExpenseList = new ArrayList<>();
+
+        //  Expenses
+        List<Expense> totalExpensesInterval =  expenseRepository.findTotalExpensesInterval(fromDate, toDate);
+
+        // Group expenses by user
+        Map<User, List<Expense>> expensesByUser = totalExpensesInterval.stream()
+                .collect(Collectors.groupingBy(Expense::getUser));
+
+        for (Map.Entry<User, List<Expense>> entry : expensesByUser.entrySet()) {
+            User user = entry.getKey();
+            List<Expense> expenses = entry.getValue();
+
+            BigDecimal totalAmount = expenses.stream()
+                    .map(Expense::getAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            UserIncomeExpense userIncomeExpense = new UserIncomeExpense();
+            userIncomeExpense.setUsername(user.getUsername());
+            userIncomeExpense.setAmount(totalAmount);
+            userIncomeExpense.setDescription("Expense");
+            userIncomeExpenseList.add(userIncomeExpense);
+        }
+
+        // Incomes
+        List<UserIncome> userIncomesInterval = userService.userIncomeResponseInterval(fromDate, toDate);
+        Map<User, List<UserIncome>> incomeByUser = userIncomesInterval.stream().collect(Collectors.groupingBy(UserIncome::getUser));
+
+        // Group incomes by user
+        for (Map.Entry<User, List<UserIncome>> entry : incomeByUser.entrySet()) {
+            User user = entry.getKey();
+            List<UserIncome> userIncomeList = entry.getValue();
+
+            BigDecimal totalAmount = userIncomeList.stream()
+                    .map(UserIncome::getAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            UserIncomeExpense userIncomeExpense = new UserIncomeExpense();
+            userIncomeExpense.setUsername(user.getUsername());
+            userIncomeExpense.setAmount(totalAmount);
+            userIncomeExpense.setDescription("Income");
+            userIncomeExpenseList.add(userIncomeExpense);
+        }
+
+        // Calculate total amount of all expenses
+        BigDecimal totalAmountSpend = totalExpensesInterval.stream()
+                .map(Expense::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Calculate total amount for all incomes
+        BigDecimal totalIncome = userIncomesInterval.stream()
+                .map(UserIncome::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Create final response
+        TotalSpendIncomeDto totalSpendIncomeDto = new TotalSpendIncomeDto();
+        totalSpendIncomeDto.setTotalHouseholdExpense(totalAmountSpend);
+        totalSpendIncomeDto.setTotalHouseholdIncome(totalIncome);
+        totalSpendIncomeDto.setFromDate(fromDate);
+        totalSpendIncomeDto.setToDate(toDate);
+        totalSpendIncomeDto.setTotalExpensesIncomesPerUser(userIncomeExpenseList);
+        return totalSpendIncomeDto;
     }
 }

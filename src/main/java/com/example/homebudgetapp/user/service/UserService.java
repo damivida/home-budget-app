@@ -10,16 +10,10 @@ import com.example.homebudgetapp.user.repository.UserIncomeRepository;
 import com.example.homebudgetapp.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -31,7 +25,6 @@ public class UserService {
 
      private final UserRepository userRepository;
      private final PasswordEncoder passwordEncoder;
-     private final AuthenticationManager authenticationManager;
      private final UserIncomeRepository userIncomeRepository;
 
     public UserResponse registerNewUserAccount(UserDto userDto) throws Exception {
@@ -46,25 +39,6 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user = saveAndFlushUser(user);
         return fromEntityUser(user);
-    }
-
-
-    public LoginResponse loginUser(LoginDto loginDto) {
-        LoginResponse loginResponse = new LoginResponse();
-        loginResponse.setUsername(loginDto.getUsername());
-        try {
-            Authentication authenticate = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginDto.getUsername(),
-                            loginDto.getPassword()));
-
-            SecurityContextHolder.getContext().setAuthentication(authenticate);
-            loginResponse.setHttpStatus(HttpStatus.OK);
-            loginResponse.setMessage("Login successful!");
-        }catch (Exception e) {
-            loginResponse.setMessage("Login failed: " + e.getMessage());
-            loginResponse.setHttpStatus(HttpStatus.UNAUTHORIZED);
-        }
-        return loginResponse;
     }
 
     public User saveAndFlushUser(User user) {
@@ -125,10 +99,10 @@ public class UserService {
         return userIncomeList.stream().map(this::fromEntityUserIncome).toList();
     }
 
-   public BigDecimal findTotalIncomeBetweenDates(LocalDateTime fromDate, LocalDateTime toDate) {
-        return userIncomeRepository.findTotalIncomeBetweenDates(fromDate, toDate);
-    }
 
+    public List<UserIncome> userIncomeResponseInterval(LocalDateTime fromDate, LocalDateTime toDate) {
+        return userIncomeRepository.findTotalIncomeInterval(fromDate, toDate);
+    }
 
     private User toEntityUser(UserDto userDto) {
         User user = new User();

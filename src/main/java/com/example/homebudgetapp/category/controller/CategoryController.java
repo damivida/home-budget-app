@@ -6,6 +6,7 @@ import com.example.homebudgetapp.category.service.CategoryService;
 import com.example.homebudgetapp.core.configuration.openapi.OpenApiTags;
 import com.example.homebudgetapp.core.exception.HomeBudgetException;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,7 @@ public class CategoryController {
 
     @PostMapping("")
     @Operation(tags = OpenApiTags.CATEGORY, summary = "Create category.")
-    public ResponseEntity<CategoryResponse> insertCategory(@RequestBody CategoryDto categoryDto) throws HomeBudgetException {
+    public ResponseEntity<CategoryResponse> insertCategory(@RequestBody @Valid CategoryDto categoryDto) throws HomeBudgetException {
         return new ResponseEntity<>(categoryService.insertCategory(categoryDto), HttpStatus.OK);
     }
 

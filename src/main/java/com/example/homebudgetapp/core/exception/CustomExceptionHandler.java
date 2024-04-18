@@ -2,13 +2,15 @@ package com.example.homebudgetapp.core.exception;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -87,6 +89,25 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
         final ErrorResponse responseBase = new ErrorResponse(HttpStatus.BAD_REQUEST, 405, builder.toString());
         return new ResponseEntity<>(responseBase, new HttpHeaders(), responseBase.getStatus());
+    }
+
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(final MethodArgumentNotValidException ex,
+                                                                  final HttpHeaders headers,
+                                                                  final HttpStatusCode status,
+                                                                  final WebRequest request) {
+        logException(ex);
+
+        final List<String> errors = new ArrayList<>();
+        for (final FieldError error : ex.getBindingResult().getFieldErrors()) {
+            errors.add(error.getField() + ": " + error.getDefaultMessage());
+        }
+        for (final ObjectError error : ex.getBindingResult().getGlobalErrors()) {
+            errors.add(error.getObjectName() + ": " + error.getDefaultMessage());
+        }
+        final ErrorResponse responseBase = new ErrorResponse(HttpStatus.BAD_REQUEST, 400, "Validation Failed", errors);
+        return handleExceptionInternal(ex, responseBase, headers, responseBase.getStatus(), request);
     }
 
     private void logException(Throwable e) {
