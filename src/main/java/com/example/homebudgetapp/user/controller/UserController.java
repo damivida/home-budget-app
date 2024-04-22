@@ -23,10 +23,16 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/register")
+    @PostMapping("/authentication/register")
     @Operation(tags = OpenApiTags.USER, summary = "Register user.")
     public ResponseEntity<UserResponse> registerUser(@Valid @RequestBody UserDto user) throws Exception {
         return new ResponseEntity<>(userService.registerNewUserAccount(user), HttpStatus.OK);
+    }
+
+    @PostMapping("/authentication/login")
+    @Operation(tags = OpenApiTags.USER, summary = "Login user.")
+    public ResponseEntity<LoginResponse> loginUser(@RequestBody LoginDto loginDto) throws Exception {
+        return new ResponseEntity<>(userService.loginUser(loginDto), HttpStatus.OK);
     }
 
     @PostMapping("/income")
