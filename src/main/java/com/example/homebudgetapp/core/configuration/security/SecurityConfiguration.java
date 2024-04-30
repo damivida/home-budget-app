@@ -12,10 +12,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractAuthenticationFilterConfigurer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 @Configuration
@@ -25,18 +27,24 @@ public class SecurityConfiguration {
     @Autowired
     private UserDetailServiceImpl userDetailService;
 
+    @Autowired
+    private JwtAuthEntryPoint jwtAuthEntryPoint;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
+                .exceptionHandling((exception)-> exception.authenticationEntryPoint(jwtAuthEntryPoint))
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers(headers -> headers.frameOptions().disable())
                 .authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/api/v1/home-budget-app/user/authentication/register", "/api/v1/home-budget-app/user/authentication/login").permitAll();
+                    registry.requestMatchers("/api/v1/home-budget-app/user/authentication/**").permitAll();
                     registry.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll();
                     registry.anyRequest().authenticated();
                 })
                 .httpBasic(AbstractHttpConfigurer::and)
                 .formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -62,4 +70,9 @@ public class SecurityConfiguration {
     public AuthenticationManager authenticationManager(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.getSharedObject(AuthenticationManagerBuilder.class).build();
     }
+
+    @Bean
+    public JWTAuthenticationFilter jwtAuthenticationFilter() {
+        return new JWTAuthenticationFilter();
+    };
 }

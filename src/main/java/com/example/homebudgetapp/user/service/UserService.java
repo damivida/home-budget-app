@@ -1,5 +1,6 @@
 package com.example.homebudgetapp.user.service;
 
+import com.example.homebudgetapp.core.configuration.security.JWTGenerator;
 import com.example.homebudgetapp.core.configuration.security.SecurityUtils;
 import com.example.homebudgetapp.core.exception.HomeBudgetException;
 import com.example.homebudgetapp.core.exception.Messages;
@@ -32,6 +33,7 @@ public class UserService {
      private final PasswordEncoder passwordEncoder;
      private final AuthenticationManager authenticationManager;
      private final UserIncomeRepository userIncomeRepository;
+    private final JWTGenerator jwtGenerator;
 
     public UserResponse registerNewUserAccount(UserDto userDto) throws Exception {
 
@@ -56,8 +58,10 @@ public class UserService {
                             loginDto.getPassword()));
 
             SecurityContextHolder.getContext().setAuthentication(authenticate);
+
             loginResponse.setHttpStatus(HttpStatus.OK);
             loginResponse.setMessage("Login successful!");
+            loginResponse.setJwtToken(jwtGenerator.generateToken(authenticate));
         }catch (Exception e) {
             loginResponse.setMessage("Login failed: " + e.getMessage());
             loginResponse.setHttpStatus(HttpStatus.UNAUTHORIZED);
