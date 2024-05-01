@@ -31,19 +31,19 @@ public class UserController {
 
     @PostMapping("/authentication/login")
     @Operation(tags = OpenApiTags.USER, summary = "Login user.")
-    public ResponseEntity<LoginResponse> loginUser(@RequestBody LoginDto loginDto) throws Exception {
+    public ResponseEntity<LoginResponse> loginUser(@Valid @RequestBody LoginDto loginDto) throws Exception {
         return new ResponseEntity<>(userService.loginUser(loginDto), HttpStatus.OK);
     }
 
     @PostMapping("/income")
     @Operation(tags = OpenApiTags.USER, summary = "Add user income.")
-    public ResponseEntity<UserIncomeResponse> addUserIncome(@Valid  @RequestBody UserIncomeDto userIncomeDto) throws Exception {
+    public ResponseEntity<UserIncomeResponse> addUserIncome(@Valid @RequestBody UserIncomeDto userIncomeDto) throws Exception {
         return new ResponseEntity<>(userService.addUserIncome(userIncomeDto), HttpStatus.OK);
     }
 
-    @PutMapping("/data")
+    @PatchMapping("/data")
     @Operation(tags = OpenApiTags.USER, summary = "Update user data.")
-    public ResponseEntity<UserResponse> updateUser(final @PathVariable("id") Long id, @RequestBody UserDto userDto) throws Exception {
+    public ResponseEntity<UserResponse> updateUser( @Valid @RequestBody UserPatchDto userDto) throws Exception {
         return new ResponseEntity<>(userService.updateUser(userDto), HttpStatus.OK);
     }
 

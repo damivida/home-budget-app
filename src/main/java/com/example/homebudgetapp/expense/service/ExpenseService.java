@@ -65,7 +65,7 @@ public class ExpenseService {
 
 
     @Transactional
-    public ExpenseResponse updateExpense(Long id, ExpenseDto expenseDto) throws HomeBudgetException {
+    public ExpenseResponse updateExpense(Long id, ExpensePatchDto expenseDto) throws HomeBudgetException {
         Expense expense = getExpenseById(id);
 
         UserDetails loggedInUser = SecurityUtils.getLoggedInUser();
@@ -89,6 +89,10 @@ public class ExpenseService {
         }
         if (Objects.nonNull(expenseDto.getCategoryId())) {
             expense.setCategory(categoryService.getCategoryById(expenseDto.getCategoryId()));
+        }
+
+        if (Objects.nonNull(expenseDto.getCreatedAt())) {
+            expense.setCreatedAt(expenseDto.getCreatedAt());
         }
 
         expenseRepository.saveAndFlush(expense);
@@ -231,6 +235,7 @@ public class ExpenseService {
         Expense expense = new Expense();
         expense.setDescription(expenseDto.getDescription());
         expense.setAmount(expenseDto.getAmount());
+        expense.setCreatedAt(expenseDto.getCreatedAt());
         expense.setCategory(category);
         expense.setUser(user);
 

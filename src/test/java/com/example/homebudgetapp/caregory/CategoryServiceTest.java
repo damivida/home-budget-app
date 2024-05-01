@@ -2,6 +2,7 @@ package com.example.homebudgetapp.caregory;
 
 
 import com.example.homebudgetapp.category.dto.CategoryDto;
+import com.example.homebudgetapp.category.dto.CategoryPatchDto;
 import com.example.homebudgetapp.category.dto.CategoryResponse;
 import com.example.homebudgetapp.category.entity.Category;
 import com.example.homebudgetapp.category.repository.CategoryRepository;
@@ -95,7 +96,7 @@ public class CategoryServiceTest {
     @Test
     void testUpdateCategory_WithValidChanges() {
         // Arrange
-        CategoryDto updatedCategoryDto = new CategoryDto();
+        CategoryPatchDto updatedCategoryDto = new CategoryPatchDto();
         updatedCategoryDto.setName("Updated Name");
         updatedCategoryDto.setDescription("Updated Description");
 

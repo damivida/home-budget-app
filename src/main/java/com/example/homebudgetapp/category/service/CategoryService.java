@@ -1,6 +1,7 @@
 package com.example.homebudgetapp.category.service;
 
 import com.example.homebudgetapp.category.dto.CategoryDto;
+import com.example.homebudgetapp.category.dto.CategoryPatchDto;
 import com.example.homebudgetapp.category.dto.CategoryResponse;
 import com.example.homebudgetapp.category.entity.Category;
 import com.example.homebudgetapp.category.repository.CategoryRepository;
@@ -53,7 +54,7 @@ public class CategoryService {
 
 
     @Transactional
-    public CategoryResponse updateCategory(Long id, CategoryDto categoryDto) {
+    public CategoryResponse updateCategory(Long id, CategoryPatchDto categoryDto) {
         Category category = getCategoryById(id);
 
         if (Objects.nonNull(categoryDto.getName())) {

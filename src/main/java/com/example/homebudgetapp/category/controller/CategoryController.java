@@ -1,6 +1,7 @@
 package com.example.homebudgetapp.category.controller;
 
 import com.example.homebudgetapp.category.dto.CategoryDto;
+import com.example.homebudgetapp.category.dto.CategoryPatchDto;
 import com.example.homebudgetapp.category.dto.CategoryResponse;
 import com.example.homebudgetapp.category.service.CategoryService;
 import com.example.homebudgetapp.core.configuration.openapi.OpenApiTags;
@@ -40,9 +41,9 @@ public class CategoryController {
         return new ResponseEntity<>(categoryService.getCategories(), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @Operation(tags = OpenApiTags.CATEGORY, summary = "Update category.")
-    public ResponseEntity<CategoryResponse> updateCategory(final @PathVariable("id") Long id, @RequestBody CategoryDto categoryDto) throws Exception {
+    public ResponseEntity<CategoryResponse> updateCategory(final @PathVariable("id") Long id, @Valid @RequestBody CategoryPatchDto categoryDto) {
         return new ResponseEntity<>(categoryService.updateCategory(id, categoryDto), HttpStatus.OK);
     }
 

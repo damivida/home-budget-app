@@ -25,8 +25,8 @@ public class Expense {
     @Column(name = "amount")
     private BigDecimal amount;
 
-    @Column(name = "created_at", updatable = false, nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "category_id")

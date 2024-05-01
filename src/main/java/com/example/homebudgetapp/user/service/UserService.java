@@ -80,7 +80,7 @@ public class UserService {
     }
 
 
-    public UserResponse updateUser(UserDto userDto) {
+    public UserResponse updateUser(UserPatchDto userDto) {
 
         UserDetails loggedInUser = SecurityUtils.getLoggedInUser();
         User user = findUserByUsername(loggedInUser.getUsername());

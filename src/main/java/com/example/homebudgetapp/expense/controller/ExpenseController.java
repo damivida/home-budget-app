@@ -2,10 +2,7 @@ package com.example.homebudgetapp.expense.controller;
 
 import com.example.homebudgetapp.core.configuration.openapi.OpenApiTags;
 import com.example.homebudgetapp.core.exception.HomeBudgetException;
-import com.example.homebudgetapp.expense.dto.ExpenseDto;
-import com.example.homebudgetapp.expense.dto.ExpenseResponse;
-import com.example.homebudgetapp.expense.dto.TimeFrame;
-import com.example.homebudgetapp.expense.dto.TotalSpendIncomeDto;
+import com.example.homebudgetapp.expense.dto.*;
 import com.example.homebudgetapp.expense.service.ExpenseService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -62,9 +59,9 @@ public class ExpenseController {
     }
 
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @Operation(tags = OpenApiTags.EXPENSE, summary = "Update expense.")
-    public ResponseEntity<ExpenseResponse> updateExpense(final @PathVariable("id") Long id, @RequestBody ExpenseDto expenseDto) throws HomeBudgetException {
+    public ResponseEntity<ExpenseResponse> updateExpense(final @PathVariable("id") Long id, @Valid @RequestBody ExpensePatchDto expenseDto) throws HomeBudgetException {
         return new ResponseEntity<>(expenseService.updateExpense(id, expenseDto), HttpStatus.OK);
     }
 
