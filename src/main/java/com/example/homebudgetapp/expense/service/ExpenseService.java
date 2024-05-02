@@ -262,9 +262,9 @@ public class ExpenseService {
 
     private TotalSpendIncomeDto expenseIncomeAggregator(LocalDateTime fromDate, LocalDateTime toDate) {
 
+        // Expenses
         // Final object list
-        List<UserIncomeExpense> userIncomeExpenseList = new ArrayList<>();
-
+        List<TotalExpensePerUser> totalExpensePerUserList = new ArrayList<>();
         //  Expenses
         List<Expense> totalExpensesInterval =  expenseRepository.findTotalExpensesInterval(fromDate, toDate);
 
@@ -280,14 +280,16 @@ public class ExpenseService {
                     .map(Expense::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            UserIncomeExpense userIncomeExpense = new UserIncomeExpense();
-            userIncomeExpense.setUsername(user.getUsername());
-            userIncomeExpense.setAmount(totalAmount);
-            userIncomeExpense.setDescription("Expense");
-            userIncomeExpenseList.add(userIncomeExpense);
+            TotalExpensePerUser totalExpensePerUser = new TotalExpensePerUser();
+            totalExpensePerUser.setAmount(totalAmount);
+            totalExpensePerUser.setUsername(user.getUsername());
+            totalExpensePerUserList.add(totalExpensePerUser);
         }
 
         // Incomes
+        // Final object list
+        List<TotalIncomePerUser> totalIncomePerUserList = new ArrayList<>();
+
         List<UserIncome> userIncomesInterval = userService.userIncomeResponseInterval(fromDate, toDate);
         Map<User, List<UserIncome>> incomeByUser = userIncomesInterval.stream().collect(Collectors.groupingBy(UserIncome::getUser));
 
@@ -300,11 +302,10 @@ public class ExpenseService {
                     .map(UserIncome::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            UserIncomeExpense userIncomeExpense = new UserIncomeExpense();
-            userIncomeExpense.setUsername(user.getUsername());
-            userIncomeExpense.setAmount(totalAmount);
-            userIncomeExpense.setDescription("Income");
-            userIncomeExpenseList.add(userIncomeExpense);
+            TotalIncomePerUser totalIncomePerUser = new TotalIncomePerUser();
+            totalIncomePerUser.setAmount(totalAmount);
+            totalIncomePerUser.setUsername(user.getUsername());
+            totalIncomePerUserList.add(totalIncomePerUser);
         }
 
         // Calculate total amount of all expenses
@@ -323,7 +324,8 @@ public class ExpenseService {
         totalSpendIncomeDto.setTotalHouseholdIncome(totalIncome);
         totalSpendIncomeDto.setFromDate(fromDate);
         totalSpendIncomeDto.setToDate(toDate);
-        totalSpendIncomeDto.setTotalExpensesIncomesPerUser(userIncomeExpenseList);
+        totalSpendIncomeDto.setTotalExpensePerUserList(totalExpensePerUserList);
+        totalSpendIncomeDto.setTotalIncomePerUserList(totalIncomePerUserList);
         return totalSpendIncomeDto;
     }
 }

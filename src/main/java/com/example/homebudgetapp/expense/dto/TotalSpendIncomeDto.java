@@ -10,19 +10,23 @@ import java.util.List;
 @Data
 public class TotalSpendIncomeDto {
 
-    @JsonProperty(namespace = "totalHouseholdExpense")
+    @JsonProperty("totalHouseholdExpense")
     private BigDecimal totalHouseholdExpense;
 
-    @JsonProperty(namespace = "totalHouseholdIncome")
+    @JsonProperty("totalHouseholdIncome")
     private BigDecimal totalHouseholdIncome;
 
-    @JsonProperty(namespace = "fromDate")
+    @JsonProperty("fromDate")
     private LocalDateTime fromDate;
 
-    @JsonProperty(namespace = "toDate")
+    @JsonProperty("toDate")
     private LocalDateTime toDate;
 
-    @JsonProperty(namespace = "totalExpensesIncomesPerUser")
-    private List<UserIncomeExpense> totalExpensesIncomesPerUser;
+    @JsonProperty("totalExpensesPerUser")
+    private List<TotalExpensePerUser> totalExpensePerUserList;
+
+    @JsonProperty("totalIncomesPerUser")
+    private List<TotalIncomePerUser> totalIncomePerUserList;
+
 }
 
